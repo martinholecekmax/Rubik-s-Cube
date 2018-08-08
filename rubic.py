@@ -1,7 +1,8 @@
-import pygame
-import numpy as np
-import sys
 import random
+import sys
+
+import numpy as np
+import pygame
 
 pygame.init()
 
@@ -13,15 +14,22 @@ GREEN = [0, 255,   0]
 RED = [255,   0,   0]
 BLACK = [0,   0,   0]
 
-RECT_SIZE = 100
-UNITS_POSITION = np.full((6, 9, 3), 0)
+RECT_SIZE = 50
+NUM_FACES = 6
+NUM_PIECES_PER_FACE = 9
+NUM_PIECES_PER_ROW = 3
+
+CUBE_ARRAY = np.full(
+    (NUM_FACES, NUM_PIECES_PER_FACE, NUM_PIECES_PER_ROW), 0)
+
 LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left side clockwise",
           "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise"]
 
-# Draw piece to the screen, Colors: 0 - White, 1 - Green, 2 - Red, 3 - Blue, 4 - Orange, 5 - Yellow
-
 
 def drawPiece(color, location):
+    """ Draw piece to the screen with color and location
+        Colors: 0 - White, 1 - Green, 2 - Red, 3 - Blue, 4 - Orange, 5 - Yellow
+    """
     if color == 0:
         pygame.draw.rect(screen, WHITE, location)
     elif color == 1:
@@ -38,255 +46,281 @@ def drawPiece(color, location):
 
 
 def initCube(pieceSize):
-    numFaces = 6
-    numPiecesPerFace = 9
-    numPiecesInRow = 3
+    """ Initialize the cube
+    """
+    numFaces = NUM_FACES
+    numPiecesPerFace = NUM_PIECES_PER_FACE
+    numPiecesInRow = NUM_PIECES_PER_ROW
 
     posCol = pieceSize
     posRow = pieceSize
-    posSideCol = 3 * pieceSize
-    posSideRow = 0
+    posFaceCol = numPiecesInRow * pieceSize     # First face has one face offset
+    posFaceRow = 0
     for side in range(numFaces):
-        for row in range(numPicesPerFace):
+        for row in range(numPiecesPerFace):
             for col in range(numPiecesInRow):
                 if col == 0:
-                    UNITS_POSITION[side][row][col] = side
-                    if posCol > 3 * pieceSize:
+                    CUBE_ARRAY[side][row][col] = side
+                    if posCol > numPiecesInRow * pieceSize:
                         posCol = pieceSize
                         posRow += pieceSize
-                    if posRow > 3 * pieceSize:
+                    if posRow > numPiecesInRow * pieceSize:
                         posRow = pieceSize
-                elif col == 2:
-                    UNITS_POSITION[side][row][col] = posCol + posSideRow
-                    posCol += pieceSize
+                elif col == 1:
+                    CUBE_ARRAY[side][row][col] = posRow + posFaceCol
                 else:
-                    UNITS_POSITION[side][row][col] = posRow + posSideCol
-        posSideCol += 3 * pieceSize
+                    CUBE_ARRAY[side][row][col] = posCol + posFaceRow
+
+                # last piece in row increment row
+                if numPiecesInRow - 1 == col:
+                    posCol += pieceSize
+        posFaceCol += numPiecesInRow * pieceSize
         if side == 0:
-            posSideRow += 3 * pieceSize
-            posSideCol = 0
+            posFaceRow += numPiecesInRow * pieceSize
+            posFaceCol = 0
             posCol = pieceSize
             posRow = pieceSize
         if side == 4:
-            posSideCol = 3 * pieceSize
-            posSideRow = 6 * pieceSize
+            # Last face has one face offset in horizontal direction
+            posFaceCol = numPiecesInRow * pieceSize
+            # Last face has two face offset in vertical direction
+            posFaceRow = 2 * numPiecesInRow * pieceSize
             posCol = pieceSize
             posRow = pieceSize
 
 
 def rotateFront():
-    swap1 = UNITS_POSITION[0][2][0]
-    swap2 = UNITS_POSITION[0][5][0]
-    swap3 = UNITS_POSITION[0][8][0]
+    """ Rotate Front face of a cube clockwise (F move to the right)
+    """
+    swap1 = CUBE_ARRAY[0][2][0]
+    swap2 = CUBE_ARRAY[0][5][0]
+    swap3 = CUBE_ARRAY[0][8][0]
 
-    UNITS_POSITION[0][2][0] = UNITS_POSITION[1][8][0]
-    UNITS_POSITION[1][8][0] = UNITS_POSITION[5][6][0]
-    UNITS_POSITION[5][6][0] = UNITS_POSITION[3][0][0]
-    UNITS_POSITION[3][0][0] = swap1
+    CUBE_ARRAY[0][2][0] = CUBE_ARRAY[1][8][0]
+    CUBE_ARRAY[1][8][0] = CUBE_ARRAY[5][6][0]
+    CUBE_ARRAY[5][6][0] = CUBE_ARRAY[3][0][0]
+    CUBE_ARRAY[3][0][0] = swap1
 
-    UNITS_POSITION[0][5][0] = UNITS_POSITION[1][7][0]
-    UNITS_POSITION[1][7][0] = UNITS_POSITION[5][3][0]
-    UNITS_POSITION[5][3][0] = UNITS_POSITION[3][1][0]
-    UNITS_POSITION[3][1][0] = swap2
+    CUBE_ARRAY[0][5][0] = CUBE_ARRAY[1][7][0]
+    CUBE_ARRAY[1][7][0] = CUBE_ARRAY[5][3][0]
+    CUBE_ARRAY[5][3][0] = CUBE_ARRAY[3][1][0]
+    CUBE_ARRAY[3][1][0] = swap2
 
-    UNITS_POSITION[0][8][0] = UNITS_POSITION[1][6][0]
-    UNITS_POSITION[1][6][0] = UNITS_POSITION[5][0][0]
-    UNITS_POSITION[5][0][0] = UNITS_POSITION[3][2][0]
-    UNITS_POSITION[3][2][0] = swap3
+    CUBE_ARRAY[0][8][0] = CUBE_ARRAY[1][6][0]
+    CUBE_ARRAY[1][6][0] = CUBE_ARRAY[5][0][0]
+    CUBE_ARRAY[5][0][0] = CUBE_ARRAY[3][2][0]
+    CUBE_ARRAY[3][2][0] = swap3
 
-    swapCorner = UNITS_POSITION[2][0][0]
-    UNITS_POSITION[2][0][0] = UNITS_POSITION[2][2][0]
-    UNITS_POSITION[2][2][0] = UNITS_POSITION[2][8][0]
-    UNITS_POSITION[2][8][0] = UNITS_POSITION[2][6][0]
-    UNITS_POSITION[2][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[2][0][0]
+    CUBE_ARRAY[2][0][0] = CUBE_ARRAY[2][2][0]
+    CUBE_ARRAY[2][2][0] = CUBE_ARRAY[2][8][0]
+    CUBE_ARRAY[2][8][0] = CUBE_ARRAY[2][6][0]
+    CUBE_ARRAY[2][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[2][1][0]
-    UNITS_POSITION[2][1][0] = UNITS_POSITION[2][5][0]
-    UNITS_POSITION[2][5][0] = UNITS_POSITION[2][7][0]
-    UNITS_POSITION[2][7][0] = UNITS_POSITION[2][3][0]
-    UNITS_POSITION[2][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[2][1][0]
+    CUBE_ARRAY[2][1][0] = CUBE_ARRAY[2][5][0]
+    CUBE_ARRAY[2][5][0] = CUBE_ARRAY[2][7][0]
+    CUBE_ARRAY[2][7][0] = CUBE_ARRAY[2][3][0]
+    CUBE_ARRAY[2][3][0] = swapMiddle
 
 
 def rotateBack():
-    swap1 = UNITS_POSITION[0][0][0]
-    swap2 = UNITS_POSITION[0][3][0]
-    swap3 = UNITS_POSITION[0][6][0]
+    """ Rotate Back face of a cube clockwise (B move to the right)
+    """
+    swap1 = CUBE_ARRAY[0][0][0]
+    swap2 = CUBE_ARRAY[0][3][0]
+    swap3 = CUBE_ARRAY[0][6][0]
 
-    UNITS_POSITION[0][0][0] = UNITS_POSITION[3][6][0]
-    UNITS_POSITION[3][6][0] = UNITS_POSITION[5][8][0]
-    UNITS_POSITION[5][8][0] = UNITS_POSITION[1][2][0]
-    UNITS_POSITION[1][2][0] = swap1
+    CUBE_ARRAY[0][0][0] = CUBE_ARRAY[3][6][0]
+    CUBE_ARRAY[3][6][0] = CUBE_ARRAY[5][8][0]
+    CUBE_ARRAY[5][8][0] = CUBE_ARRAY[1][2][0]
+    CUBE_ARRAY[1][2][0] = swap1
 
-    UNITS_POSITION[0][3][0] = UNITS_POSITION[3][7][0]
-    UNITS_POSITION[3][7][0] = UNITS_POSITION[5][5][0]
-    UNITS_POSITION[5][5][0] = UNITS_POSITION[1][1][0]
-    UNITS_POSITION[1][1][0] = swap2
+    CUBE_ARRAY[0][3][0] = CUBE_ARRAY[3][7][0]
+    CUBE_ARRAY[3][7][0] = CUBE_ARRAY[5][5][0]
+    CUBE_ARRAY[5][5][0] = CUBE_ARRAY[1][1][0]
+    CUBE_ARRAY[1][1][0] = swap2
 
-    UNITS_POSITION[0][6][0] = UNITS_POSITION[3][8][0]
-    UNITS_POSITION[3][8][0] = UNITS_POSITION[5][2][0]
-    UNITS_POSITION[5][2][0] = UNITS_POSITION[1][0][0]
-    UNITS_POSITION[1][0][0] = swap3
+    CUBE_ARRAY[0][6][0] = CUBE_ARRAY[3][8][0]
+    CUBE_ARRAY[3][8][0] = CUBE_ARRAY[5][2][0]
+    CUBE_ARRAY[5][2][0] = CUBE_ARRAY[1][0][0]
+    CUBE_ARRAY[1][0][0] = swap3
 
-    swapCorner = UNITS_POSITION[4][0][0]
-    UNITS_POSITION[4][0][0] = UNITS_POSITION[4][2][0]
-    UNITS_POSITION[4][2][0] = UNITS_POSITION[4][8][0]
-    UNITS_POSITION[4][8][0] = UNITS_POSITION[4][6][0]
-    UNITS_POSITION[4][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[4][0][0]
+    CUBE_ARRAY[4][0][0] = CUBE_ARRAY[4][2][0]
+    CUBE_ARRAY[4][2][0] = CUBE_ARRAY[4][8][0]
+    CUBE_ARRAY[4][8][0] = CUBE_ARRAY[4][6][0]
+    CUBE_ARRAY[4][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[4][1][0]
-    UNITS_POSITION[4][1][0] = UNITS_POSITION[4][5][0]
-    UNITS_POSITION[4][5][0] = UNITS_POSITION[4][7][0]
-    UNITS_POSITION[4][7][0] = UNITS_POSITION[4][3][0]
-    UNITS_POSITION[4][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[4][1][0]
+    CUBE_ARRAY[4][1][0] = CUBE_ARRAY[4][5][0]
+    CUBE_ARRAY[4][5][0] = CUBE_ARRAY[4][7][0]
+    CUBE_ARRAY[4][7][0] = CUBE_ARRAY[4][3][0]
+    CUBE_ARRAY[4][3][0] = swapMiddle
 
 
 def rotateLeft():
-    swap1 = UNITS_POSITION[4][6][0]
-    swap2 = UNITS_POSITION[4][7][0]
-    swap3 = UNITS_POSITION[4][8][0]
+    """ Rotate Left face of a cube clockwise (L move to the right)
+    """
+    swap1 = CUBE_ARRAY[4][6][0]
+    swap2 = CUBE_ARRAY[4][7][0]
+    swap3 = CUBE_ARRAY[4][8][0]
 
-    UNITS_POSITION[4][6][0] = UNITS_POSITION[5][2][0]
-    UNITS_POSITION[5][2][0] = UNITS_POSITION[2][2][0]
-    UNITS_POSITION[2][2][0] = UNITS_POSITION[0][2][0]
-    UNITS_POSITION[0][2][0] = swap1
+    CUBE_ARRAY[4][6][0] = CUBE_ARRAY[5][2][0]
+    CUBE_ARRAY[5][2][0] = CUBE_ARRAY[2][2][0]
+    CUBE_ARRAY[2][2][0] = CUBE_ARRAY[0][2][0]
+    CUBE_ARRAY[0][2][0] = swap1
 
-    UNITS_POSITION[4][7][0] = UNITS_POSITION[5][1][0]
-    UNITS_POSITION[5][1][0] = UNITS_POSITION[2][1][0]
-    UNITS_POSITION[2][1][0] = UNITS_POSITION[0][1][0]
-    UNITS_POSITION[0][1][0] = swap2
+    CUBE_ARRAY[4][7][0] = CUBE_ARRAY[5][1][0]
+    CUBE_ARRAY[5][1][0] = CUBE_ARRAY[2][1][0]
+    CUBE_ARRAY[2][1][0] = CUBE_ARRAY[0][1][0]
+    CUBE_ARRAY[0][1][0] = swap2
 
-    UNITS_POSITION[4][8][0] = UNITS_POSITION[5][0][0]
-    UNITS_POSITION[5][0][0] = UNITS_POSITION[2][0][0]
-    UNITS_POSITION[2][0][0] = UNITS_POSITION[0][0][0]
-    UNITS_POSITION[0][0][0] = swap3
+    CUBE_ARRAY[4][8][0] = CUBE_ARRAY[5][0][0]
+    CUBE_ARRAY[5][0][0] = CUBE_ARRAY[2][0][0]
+    CUBE_ARRAY[2][0][0] = CUBE_ARRAY[0][0][0]
+    CUBE_ARRAY[0][0][0] = swap3
 
-    swapCorner = UNITS_POSITION[1][0][0]
-    UNITS_POSITION[1][0][0] = UNITS_POSITION[1][2][0]
-    UNITS_POSITION[1][2][0] = UNITS_POSITION[1][8][0]
-    UNITS_POSITION[1][8][0] = UNITS_POSITION[1][6][0]
-    UNITS_POSITION[1][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[1][0][0]
+    CUBE_ARRAY[1][0][0] = CUBE_ARRAY[1][2][0]
+    CUBE_ARRAY[1][2][0] = CUBE_ARRAY[1][8][0]
+    CUBE_ARRAY[1][8][0] = CUBE_ARRAY[1][6][0]
+    CUBE_ARRAY[1][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[1][1][0]
-    UNITS_POSITION[1][1][0] = UNITS_POSITION[1][5][0]
-    UNITS_POSITION[1][5][0] = UNITS_POSITION[1][7][0]
-    UNITS_POSITION[1][7][0] = UNITS_POSITION[1][3][0]
-    UNITS_POSITION[1][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[1][1][0]
+    CUBE_ARRAY[1][1][0] = CUBE_ARRAY[1][5][0]
+    CUBE_ARRAY[1][5][0] = CUBE_ARRAY[1][7][0]
+    CUBE_ARRAY[1][7][0] = CUBE_ARRAY[1][3][0]
+    CUBE_ARRAY[1][3][0] = swapMiddle
 
 
-def rotateRightSide():
-    swap1 = UNITS_POSITION[0][6][0]
-    swap2 = UNITS_POSITION[0][7][0]
-    swap3 = UNITS_POSITION[0][8][0]
+def rotateRight():
+    """ Rotate Right face of a cube clockwise (R move to the right)
+    """
+    swap1 = CUBE_ARRAY[0][6][0]
+    swap2 = CUBE_ARRAY[0][7][0]
+    swap3 = CUBE_ARRAY[0][8][0]
 
-    UNITS_POSITION[0][6][0] = UNITS_POSITION[2][6][0]
-    UNITS_POSITION[2][6][0] = UNITS_POSITION[5][6][0]
-    UNITS_POSITION[5][6][0] = UNITS_POSITION[4][2][0]
-    UNITS_POSITION[4][2][0] = swap1
+    CUBE_ARRAY[0][6][0] = CUBE_ARRAY[2][6][0]
+    CUBE_ARRAY[2][6][0] = CUBE_ARRAY[5][6][0]
+    CUBE_ARRAY[5][6][0] = CUBE_ARRAY[4][2][0]
+    CUBE_ARRAY[4][2][0] = swap1
 
-    UNITS_POSITION[0][7][0] = UNITS_POSITION[2][7][0]
-    UNITS_POSITION[2][7][0] = UNITS_POSITION[5][7][0]
-    UNITS_POSITION[5][7][0] = UNITS_POSITION[4][1][0]
-    UNITS_POSITION[4][1][0] = swap2
+    CUBE_ARRAY[0][7][0] = CUBE_ARRAY[2][7][0]
+    CUBE_ARRAY[2][7][0] = CUBE_ARRAY[5][7][0]
+    CUBE_ARRAY[5][7][0] = CUBE_ARRAY[4][1][0]
+    CUBE_ARRAY[4][1][0] = swap2
 
-    UNITS_POSITION[0][8][0] = UNITS_POSITION[2][8][0]
-    UNITS_POSITION[2][8][0] = UNITS_POSITION[5][8][0]
-    UNITS_POSITION[5][8][0] = UNITS_POSITION[4][0][0]
-    UNITS_POSITION[4][0][0] = swap3
+    CUBE_ARRAY[0][8][0] = CUBE_ARRAY[2][8][0]
+    CUBE_ARRAY[2][8][0] = CUBE_ARRAY[5][8][0]
+    CUBE_ARRAY[5][8][0] = CUBE_ARRAY[4][0][0]
+    CUBE_ARRAY[4][0][0] = swap3
 
-    swapCorner = UNITS_POSITION[3][0][0]
-    UNITS_POSITION[3][0][0] = UNITS_POSITION[3][2][0]
-    UNITS_POSITION[3][2][0] = UNITS_POSITION[3][8][0]
-    UNITS_POSITION[3][8][0] = UNITS_POSITION[3][6][0]
-    UNITS_POSITION[3][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[3][0][0]
+    CUBE_ARRAY[3][0][0] = CUBE_ARRAY[3][2][0]
+    CUBE_ARRAY[3][2][0] = CUBE_ARRAY[3][8][0]
+    CUBE_ARRAY[3][8][0] = CUBE_ARRAY[3][6][0]
+    CUBE_ARRAY[3][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[3][1][0]
-    UNITS_POSITION[3][1][0] = UNITS_POSITION[3][5][0]
-    UNITS_POSITION[3][5][0] = UNITS_POSITION[3][7][0]
-    UNITS_POSITION[3][7][0] = UNITS_POSITION[3][3][0]
-    UNITS_POSITION[3][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[3][1][0]
+    CUBE_ARRAY[3][1][0] = CUBE_ARRAY[3][5][0]
+    CUBE_ARRAY[3][5][0] = CUBE_ARRAY[3][7][0]
+    CUBE_ARRAY[3][7][0] = CUBE_ARRAY[3][3][0]
+    CUBE_ARRAY[3][3][0] = swapMiddle
 
 
 def rotateTop():
-    swap1 = UNITS_POSITION[1][0][0]
-    swap2 = UNITS_POSITION[1][3][0]
-    swap3 = UNITS_POSITION[1][6][0]
+    """ Rotate Top face of a cube clockwise (U move to the right)
+    """
+    swap1 = CUBE_ARRAY[1][0][0]
+    swap2 = CUBE_ARRAY[1][3][0]
+    swap3 = CUBE_ARRAY[1][6][0]
 
-    UNITS_POSITION[1][0][0] = UNITS_POSITION[2][0][0]
-    UNITS_POSITION[2][0][0] = UNITS_POSITION[3][0][0]
-    UNITS_POSITION[3][0][0] = UNITS_POSITION[4][0][0]
-    UNITS_POSITION[4][0][0] = swap1
+    CUBE_ARRAY[1][0][0] = CUBE_ARRAY[2][0][0]
+    CUBE_ARRAY[2][0][0] = CUBE_ARRAY[3][0][0]
+    CUBE_ARRAY[3][0][0] = CUBE_ARRAY[4][0][0]
+    CUBE_ARRAY[4][0][0] = swap1
 
-    UNITS_POSITION[1][3][0] = UNITS_POSITION[2][3][0]
-    UNITS_POSITION[2][3][0] = UNITS_POSITION[3][3][0]
-    UNITS_POSITION[3][3][0] = UNITS_POSITION[4][3][0]
-    UNITS_POSITION[4][3][0] = swap2
+    CUBE_ARRAY[1][3][0] = CUBE_ARRAY[2][3][0]
+    CUBE_ARRAY[2][3][0] = CUBE_ARRAY[3][3][0]
+    CUBE_ARRAY[3][3][0] = CUBE_ARRAY[4][3][0]
+    CUBE_ARRAY[4][3][0] = swap2
 
-    UNITS_POSITION[1][6][0] = UNITS_POSITION[2][6][0]
-    UNITS_POSITION[2][6][0] = UNITS_POSITION[3][6][0]
-    UNITS_POSITION[3][6][0] = UNITS_POSITION[4][6][0]
-    UNITS_POSITION[4][6][0] = swap3
+    CUBE_ARRAY[1][6][0] = CUBE_ARRAY[2][6][0]
+    CUBE_ARRAY[2][6][0] = CUBE_ARRAY[3][6][0]
+    CUBE_ARRAY[3][6][0] = CUBE_ARRAY[4][6][0]
+    CUBE_ARRAY[4][6][0] = swap3
 
-    swapCorner = UNITS_POSITION[0][0][0]
-    UNITS_POSITION[0][0][0] = UNITS_POSITION[0][2][0]
-    UNITS_POSITION[0][2][0] = UNITS_POSITION[0][8][0]
-    UNITS_POSITION[0][8][0] = UNITS_POSITION[0][6][0]
-    UNITS_POSITION[0][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[0][0][0]
+    CUBE_ARRAY[0][0][0] = CUBE_ARRAY[0][2][0]
+    CUBE_ARRAY[0][2][0] = CUBE_ARRAY[0][8][0]
+    CUBE_ARRAY[0][8][0] = CUBE_ARRAY[0][6][0]
+    CUBE_ARRAY[0][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[0][1][0]
-    UNITS_POSITION[0][1][0] = UNITS_POSITION[0][5][0]
-    UNITS_POSITION[0][5][0] = UNITS_POSITION[0][7][0]
-    UNITS_POSITION[0][7][0] = UNITS_POSITION[0][3][0]
-    UNITS_POSITION[0][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[0][1][0]
+    CUBE_ARRAY[0][1][0] = CUBE_ARRAY[0][5][0]
+    CUBE_ARRAY[0][5][0] = CUBE_ARRAY[0][7][0]
+    CUBE_ARRAY[0][7][0] = CUBE_ARRAY[0][3][0]
+    CUBE_ARRAY[0][3][0] = swapMiddle
 
 
 def rotateBottom():
-    swap1 = UNITS_POSITION[1][2][0]
-    swap2 = UNITS_POSITION[1][5][0]
-    swap3 = UNITS_POSITION[1][8][0]
+    """ Rotate Bottom face of a cube clockwise (D move to the right)
+    """
+    swap1 = CUBE_ARRAY[1][2][0]
+    swap2 = CUBE_ARRAY[1][5][0]
+    swap3 = CUBE_ARRAY[1][8][0]
 
-    UNITS_POSITION[1][2][0] = UNITS_POSITION[4][2][0]
-    UNITS_POSITION[4][2][0] = UNITS_POSITION[3][2][0]
-    UNITS_POSITION[3][2][0] = UNITS_POSITION[2][2][0]
-    UNITS_POSITION[2][2][0] = swap1
+    CUBE_ARRAY[1][2][0] = CUBE_ARRAY[4][2][0]
+    CUBE_ARRAY[4][2][0] = CUBE_ARRAY[3][2][0]
+    CUBE_ARRAY[3][2][0] = CUBE_ARRAY[2][2][0]
+    CUBE_ARRAY[2][2][0] = swap1
 
-    UNITS_POSITION[1][5][0] = UNITS_POSITION[4][5][0]
-    UNITS_POSITION[4][5][0] = UNITS_POSITION[3][5][0]
-    UNITS_POSITION[3][5][0] = UNITS_POSITION[2][5][0]
-    UNITS_POSITION[2][5][0] = swap2
+    CUBE_ARRAY[1][5][0] = CUBE_ARRAY[4][5][0]
+    CUBE_ARRAY[4][5][0] = CUBE_ARRAY[3][5][0]
+    CUBE_ARRAY[3][5][0] = CUBE_ARRAY[2][5][0]
+    CUBE_ARRAY[2][5][0] = swap2
 
-    UNITS_POSITION[1][8][0] = UNITS_POSITION[4][8][0]
-    UNITS_POSITION[4][8][0] = UNITS_POSITION[3][8][0]
-    UNITS_POSITION[3][8][0] = UNITS_POSITION[2][8][0]
-    UNITS_POSITION[2][8][0] = swap3
+    CUBE_ARRAY[1][8][0] = CUBE_ARRAY[4][8][0]
+    CUBE_ARRAY[4][8][0] = CUBE_ARRAY[3][8][0]
+    CUBE_ARRAY[3][8][0] = CUBE_ARRAY[2][8][0]
+    CUBE_ARRAY[2][8][0] = swap3
 
-    swapCorner = UNITS_POSITION[5][0][0]
-    UNITS_POSITION[5][0][0] = UNITS_POSITION[5][2][0]
-    UNITS_POSITION[5][2][0] = UNITS_POSITION[5][8][0]
-    UNITS_POSITION[5][8][0] = UNITS_POSITION[5][6][0]
-    UNITS_POSITION[5][6][0] = swapCorner
+    swapCorner = CUBE_ARRAY[5][0][0]
+    CUBE_ARRAY[5][0][0] = CUBE_ARRAY[5][2][0]
+    CUBE_ARRAY[5][2][0] = CUBE_ARRAY[5][8][0]
+    CUBE_ARRAY[5][8][0] = CUBE_ARRAY[5][6][0]
+    CUBE_ARRAY[5][6][0] = swapCorner
 
-    swapMiddle = UNITS_POSITION[5][1][0]
-    UNITS_POSITION[5][1][0] = UNITS_POSITION[5][5][0]
-    UNITS_POSITION[5][5][0] = UNITS_POSITION[5][7][0]
-    UNITS_POSITION[5][7][0] = UNITS_POSITION[5][3][0]
-    UNITS_POSITION[5][3][0] = swapMiddle
+    swapMiddle = CUBE_ARRAY[5][1][0]
+    CUBE_ARRAY[5][1][0] = CUBE_ARRAY[5][5][0]
+    CUBE_ARRAY[5][5][0] = CUBE_ARRAY[5][7][0]
+    CUBE_ARRAY[5][7][0] = CUBE_ARRAY[5][3][0]
+    CUBE_ARRAY[5][3][0] = swapMiddle
 
 
 def randomShuffle(number):
+    """ Randomly shuffle the cube
+    """
     sequence = ""
-    for i in range(number):
+    for _ in range(number):
         choice = random.choice(["U", "D", "L", "R", "F", "B"])
         sequence += rotateCube(choice)
     return sequence
 
 
-def unshuffle(listChoices):
+def sortCube(listChoices):
+    """ Sort the cube by the moves stored in list
+    """
+    # Reverse list before the iteration
     for choice in reversed(listChoices):
-        for i in range(3):
+        for _ in range(3):
             rotateCube(choice)
 
 
 def rotateCube(move):
+    """ Rotate the cube by the move
+    """
     if move == "U":
         rotateTop()
         return "U"
@@ -297,7 +331,7 @@ def rotateCube(move):
         rotateLeft()
         return "L"
     elif move == "R":
-        rotateRightSide()
+        rotateRight()
         return "R"
     elif move == "F":
         rotateFront()
@@ -305,6 +339,33 @@ def rotateCube(move):
     else:
         rotateBack()
         return "B"
+
+
+def drawCube():
+    """ Draw the cube on the screen
+    """
+    for side in range(NUM_FACES):
+        for row in range(NUM_PIECES_PER_FACE):
+            drawPiece(CUBE_ARRAY[side][row][0], [
+                      CUBE_ARRAY[side][row][1], CUBE_ARRAY[side][row][2], RECT_SIZE, RECT_SIZE])
+
+
+def drawText(screen, font, text):
+    """ Render text on the screen
+    """
+    line = font.render(text, True, BLUE)
+    screen.blit(line, (screen.get_width() - line.get_width() -
+                       200, 200))
+
+
+def drawLegend(screen, font):
+    """ Render Legend on the screen
+    """
+    textPadding = 0
+    for sentence in LEGEND:
+        line = font.render(sentence, True, BLUE)
+        screen.blit(line, (screen.get_width() - 400, 300 + textPadding))
+        textPadding += 100
 
 
 initCube(RECT_SIZE)
@@ -325,8 +386,7 @@ font = pygame.font.SysFont("comicsansms", 24)
 
 key = "Moves: "
 
-# shuffle()
-listA = []
+listOfMoves = []
 
 while not pattern:
     for event in pygame.event.get():
@@ -345,7 +405,7 @@ while not pattern:
                 rotateLeft()
                 key += "L "
             if event.key == pygame.K_r:
-                rotateRightSide()
+                rotateRight()
                 key += "R "
             if event.key == pygame.K_f:
                 rotateFront()
@@ -353,8 +413,10 @@ while not pattern:
             if event.key == pygame.K_b:
                 rotateBack()
                 key += "B "
+
+            # press 0 to shuffle cube
             if event.key == pygame.K_0:
-                # initCube(RECT_SIZE)
+                # Shuffle - make 1000 random moves
                 sh = randomShuffle(1000)
 
                 # Write shuffle algorithm into the file
@@ -362,37 +424,18 @@ while not pattern:
                 #     f.write(sh)
 
                 # Insert shuffle into the list
-                listA.clear()
+                listOfMoves.clear()
                 for a in sh:
-                    listA.append(a)
-
-                print(listA)
-                key = "Shuffled: "
+                    listOfMoves.append(a)
+            # press 1 to sort a cube
             if event.key == pygame.K_1:
-                unshuffle(listA)
-                key = "Unshuffled: "
+                sortCube(listOfMoves)
 
     screen.blit(background, (0, 0))
 
-    for side in range(6):
-        for row in range(9):
-            drawPiece(UNITS_POSITION[side][row][0], [UNITS_POSITION[side][row][1],
-                                                     UNITS_POSITION[side][row][2], RECT_SIZE, RECT_SIZE])
-
-    # render text
-    # screen.blit(text,
-    #             (520 - text.get_width() // 2, 240 - text.get_height() // 2))
-    # screen.blit(text,
-    #             ((screen.get_width() - text.get_width()) // 2, (screen.get_height() - text.get_height()) // 2))
-    text = font.render(key, True, BLUE)
-    screen.blit(text, (screen.get_width() - text.get_width() -
-                       200, 200))
-
-    padding = 0
-    for sentence in LEGEND:
-        line = font.render(sentence, True, BLUE)
-        screen.blit(line, (screen.get_width() - 400, 300 + padding))
-        padding += 100
+    drawCube()
+    drawText(screen, font, key)
+    drawLegend(screen, font)
 
     pygame.display.flip()
     clock.tick(60)
