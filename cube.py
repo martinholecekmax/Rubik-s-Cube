@@ -2,7 +2,6 @@ import random
 import numpy as np
 
 class Cube:
-
     piece_size = 50
     num_faces = 6
     num_pieces_per_face = 9

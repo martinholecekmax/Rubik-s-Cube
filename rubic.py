@@ -1,6 +1,5 @@
-# import sys
 import pygame
-from cube import Cube as CB
+import cube as CB
 
 BLUE = [0, 0, 255]
 YELLOW = [255, 255, 128]
@@ -13,14 +12,16 @@ BLACK = [0,   0,   0]
 LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left side clockwise",
           "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise"]
 
-Cube = CB()
+Cube = CB.Cube()
 
 def game_loop():
     pygame.init()
     Cube.init_cube()
 
+    # Switch to fullscreen mode
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     screen = pygame.display.set_mode((1500, 1000))
+
     pygame.display.set_caption("Rubics Cube")
     pattern = False
     clock = pygame.time.Clock()
@@ -30,7 +31,7 @@ def game_loop():
     background = background.convert()
     background.fill(WHITE)
 
-    # display text
+    # Set Font
     font = pygame.font.SysFont("comicsansms", 24)
 
     key_list = "Moves: "
@@ -126,7 +127,6 @@ def key_pressed(event, pygame):
     if event.key == pygame.K_0:
         return Cube.random_shuffle(number=10)
     return ""
-
 
 # Start game
 game_loop()
