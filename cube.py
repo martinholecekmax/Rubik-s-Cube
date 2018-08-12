@@ -4,9 +4,10 @@ import numpy as np
 class Cube:
     piece_size = 50
     num_faces = 6
-    num_pieces_per_face = 9
-    num_pieces_per_row = 3
-    cube_array = np.full((num_faces, num_pieces_per_face, num_pieces_per_row), 0)
+    num_pieces_per_face = 9    # size of cube => 9 for 3x3 cube, 16 for 4x4 cube ...
+    num_pieces_per_row = np.sqrt(num_pieces_per_face)
+    row_size = 3    # 0 - color, 1 - x position, 2 - y position
+    cube_array = np.full((num_faces, num_pieces_per_face, row_size), 0)
 
     def get_cube(self):
         return self.cube_array
@@ -20,14 +21,15 @@ class Cube:
     def get_num_pieces_per_face(self):
         return self.num_pieces_per_face
 
-    def get_num_pieces_per_row(self):
-        return self.num_pieces_per_row
+    def get_row_size(self):
+        return self.row_size
 
     def init_cube(self):
         """ Initialize the cube
         """
         num_faces = self.num_faces
         num_pieces_per_face = self.num_pieces_per_face
+        row_size = self.row_size
         num_pieces_per_row = self.num_pieces_per_row
         piece_size = self.piece_size
         cube = self.cube_array
@@ -38,7 +40,7 @@ class Cube:
         face_row_position = 0
         for side in range(num_faces):
             for row in range(num_pieces_per_face):
-                for col in range(num_pieces_per_row):
+                for col in range(row_size):
                     if col == 0:
                         cube[side][row][col] = side
                         if column_position > num_pieces_per_row * piece_size:
@@ -52,7 +54,7 @@ class Cube:
                         cube[side][row][col] = column_position + face_row_position
 
                     # last piece in row increment row
-                    if num_pieces_per_row - 1 == col:
+                    if row_size - 1 == col:
                         column_position += piece_size
             face_column_position += num_pieces_per_row * piece_size
             if side == 0:
@@ -308,6 +310,11 @@ class Cube:
         else:
             return "?"
 
+    def rotate_cube_reverse(self, move):
+        """ Rotate the cube in reverse move, for example, U move becomes U' -> 3x U move """
+        for _ in range(3):
+                self.rotate_cube(move)
+
     def random_shuffle(self, number):
         """ Randomly shuffle the cube
         """
@@ -322,5 +329,4 @@ class Cube:
         """
         # Reverse list before the iteration
         for choice in reversed(listChoices):
-            for _ in range(3):
-                self.rotate_cube(choice)
+            self.rotate_cube_reverse(choice)

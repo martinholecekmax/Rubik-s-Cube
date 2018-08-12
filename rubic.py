@@ -10,13 +10,15 @@ RED = [255,   0,   0]
 BLACK = [0,   0,   0]
 
 LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left side clockwise",
-          "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise"]
+          "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise", "Hold SHIFT key to move anti-clockwise"]
 
 Cube = CB.Cube()
 
 def game_loop():
     pygame.init()
     Cube.init_cube()
+
+    print(Cube.cube_array)
 
     # Switch to fullscreen mode
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -94,7 +96,7 @@ def draw_text(screen, font, text):
     """
     line = font.render(text, True, BLUE)
     screen.blit(line, (screen.get_width() - line.get_width() -
-                       200, 200))
+                       300, 200))
 
 def draw_legend(screen, font):
     """ Render Legend on the screen
@@ -102,27 +104,45 @@ def draw_legend(screen, font):
     text_padding = 0
     for sentence in LEGEND:
         line = font.render(sentence, True, BLUE)
-        screen.blit(line, (screen.get_width() - 400, 300 + text_padding))
+        screen.blit(line, (screen.get_width() - 500, 300 + text_padding))
         text_padding += 100
 
 def key_pressed(event, pygame):
+    if event.key == pygame.K_u and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("U")
+        return "U'"
     if event.key == pygame.K_u:
-        Cube.rotate_top()
+        Cube.rotate_cube("U")
         return "U"
+    if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("D")
+        return "D'"
     if event.key == pygame.K_d:
-        Cube.rotate_bottom()
+        Cube.rotate_cube("D")
         return "D"
+    if event.key == pygame.K_l and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("L")
+        return "L'"
     if event.key == pygame.K_l:
-        Cube.rotate_left()
+        Cube.rotate_cube("L")
         return "L"
+    if event.key == pygame.K_r and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("R")
+        return "R'"
     if event.key == pygame.K_r:
-        Cube.rotate_right()
+        Cube.rotate_cube("R")
         return "R"
+    if event.key == pygame.K_f and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("F")
+        return "F'"
     if event.key == pygame.K_f:
-        Cube.rotate_front()
+        Cube.rotate_cube("F")
         return "F"
+    if event.key == pygame.K_b and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        Cube.rotate_cube_reverse("B")
+        return "B'"
     if event.key == pygame.K_b:
-        Cube.rotate_back()
+        Cube.rotate_cube("B")
         return "B"
     if event.key == pygame.K_0:
         return Cube.random_shuffle(number=10)
