@@ -324,9 +324,23 @@ class Cube:
             sequence += self.rotate_cube(choice)
         return sequence
 
-    def sort_cube(self, listChoices):
+    def sort_cube(self, list_choices):
         """ Sort the cube by the moves stored in list
         """
         # Reverse list before the iteration
-        for choice in reversed(listChoices):
+        for choice in reversed(list_choices):
             self.rotate_cube_reverse(choice)
+
+    def is_solved(self):
+        """ Check if the cube is solved """
+        for face in range(self.num_faces):
+            for piece in range(self.num_pieces_per_face):
+                if self.cube_array[face][piece][0] != face:
+                    return False
+        return True
+
+    def super_flip_configuration(self):
+        """ This is a rubics cube configuration where the cube is most scrumbled """
+        list_of_moves = ["U", "R", "R", "F", "B", "R", "B", "B", "R", "U", "U", "L", "B", "B", "R", "U", "U", "U", "D", "D", "D", "R", "R", "F", "R", "R", "R", "L", "B", "B", "U", "U", "F", "F"]
+        for move in list_of_moves:
+            self.rotate_cube(move)
