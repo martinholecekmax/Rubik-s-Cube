@@ -18,8 +18,8 @@ Cube = CB.Cube()
 def game_loop():
     pygame.init()
     Cube.init_cube()
-
-    print(Cube.cube_array)
+    Cube.init_colors()
+    Cube.super_flip_configuration()
 
     # Switch to fullscreen mode
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -39,11 +39,7 @@ def game_loop():
     # Set Font
     font = pygame.font.SysFont("comicsansms", 24)
 
-    key_list = "Moves: "
-
     times_solved = 0
-    Cube.super_flip_configuration()
-
     moves_tries = 40
 
     while not pattern:
@@ -55,23 +51,21 @@ def game_loop():
                     pattern = True
                 if event.key == pygame.K_1:
                     Cube.init_cube()
-                    key_list = "Moves: "
                 key = key_pressed(event, pygame)
                 if key != "X":
-                    key_list += key
                     if Cube.is_solved():
                         times_solved = times_solved + 1
                         Cube.super_flip_configuration()
 
-        screen.blit(background, (0, 0))
+        screen.blit(background, (0, 0))     # clear screen
 
         draw_cube(pygame, screen)
         draw_multiple_lines(screen, font, LEGEND,
                             screen_width - 100, 150, "RIGHT", 50)
-
-        # times_solved += ai_moves(moves_tries)
         draw_text(screen, font, "Time solved: " + str(times_solved),
                   screen_width - 100, 50, "RIGHT")
+
+        # times_solved += ai_moves(moves_tries)
 
         pygame.display.flip()
         clock.tick(60)
@@ -82,14 +76,18 @@ def draw_cube(pygame, screen):
     """ Draw the cube on the screen
     """
     cube = Cube.get_cube()
+    cube_color = Cube.get_cube_colors()
     num_faces = Cube.get_num_faces()
     num_pieces_per_face = Cube.get_num_pieces_per_face()
+    num_pieces_per_row = Cube.get_num_pieces_per_row()
+    num_pieces_per_col = Cube.get_num_pieces_per_col()
     piece_size = Cube.get_piece_size()
 
     for side in range(num_faces):
-        for row in range(num_pieces_per_face):
-            draw_piece(pygame, screen, cube[side][row][0], [
-                cube[side][row][1], cube[side][row][2], piece_size, piece_size])
+        for row in range(num_pieces_per_row):
+            for col in range(num_pieces_per_col):
+                draw_piece(pygame, screen, cube_color[side][row][col], [
+                    cube[side][row][col][0], cube[side][row][col][1], piece_size, piece_size])
 
 
 def draw_piece(pygame, screen, color, location):
@@ -126,11 +124,11 @@ def draw_text(screen, font, text, location_x, location_y, justify):
         screen.blit(line, (location_x, location_y))
 
 
-def draw_multiple_lines(screen, font, text_array, location_x, location_y, justify, line_spacing):
-    """ Render Legend on the screen
+def draw_multiple_lines(screen, font, text_list, location_x, location_y, justify, line_spacing):
+    """ Render text with multiple lines on the screen
     """
     space_between_lines = 0
-    for sentence in text_array:
+    for sentence in text_list:
         draw_text(screen, font, sentence, location_x,
                   location_y + space_between_lines, justify)
         space_between_lines += line_spacing
@@ -173,15 +171,14 @@ def key_pressed(event, pygame):
     if event.key == pygame.K_b:
         Cube.rotate_cube("B")
         return "B"
-    # if event.key == pygame.K_0:
-    #     return Cube.random_shuffle(number=10)
+    if event.key == pygame.K_0:
+        return Cube.random_shuffle(number=10)
     return "X"  # Not valid move
 
 
 def ai_moves(moves_tries):
     Cube.random_shuffle(1)
     if Cube.is_solved():
-        # print(Cube.random_shuffle(10))
         Cube.super_flip_configuration()
         return 1
     else:
