@@ -76,8 +76,7 @@ class Cube:
                 face_row_position += num_pieces_per_row * piece_size    # face offset in vertical direction
 
     def rotate_top(self):
-        """ Rotate Top face of a cube clockwise (U move to the right)
-        """
+        """ Rotate Top face of a cube clockwise (U move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[1][0][0]
@@ -112,8 +111,7 @@ class Cube:
         cube[0][1][2] = swap_middle
 
     def rotate_bottom(self):
-        """ Rotate Bottom face of a cube clockwise (D move to the right)
-        """
+        """ Rotate Bottom face of a cube clockwise (D move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[1][2][0]
@@ -149,8 +147,7 @@ class Cube:
         cube[5][1][2] = swap_middle
 
     def rotate_right(self):
-        """ Rotate Right face of a cube clockwise (R move to the right)
-        """
+        """ Rotate Right face of a cube clockwise (R move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[0][0][2]
@@ -185,8 +182,7 @@ class Cube:
         cube[3][1][2] = swap_middle
 
     def rotate_left(self):
-        """ Rotate Left face of a cube clockwise (L move to the right)
-        """
+        """ Rotate Left face of a cube clockwise (L move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[0][0][0]
@@ -221,8 +217,7 @@ class Cube:
         cube[1][1][2] = swap_middle
 
     def rotate_front(self):
-        """ Rotate Front face of a cube clockwise (F move to the right)
-        """
+        """ Rotate Front face of a cube clockwise (F move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[0][2][0]
@@ -257,8 +252,7 @@ class Cube:
         cube[2][1][2] = swap_middle
 
     def rotate_back(self):
-        """ Rotate Back face of a cube clockwise (B move to the right)
-        """
+        """ Rotate Back face of a cube clockwise (B move to the right) """
         cube = self.cube_colors
 
         swap1 = cube[0][0][0]
@@ -294,8 +288,7 @@ class Cube:
         cube[4][1][2] = swap_middle
 
     def rotate_cube(self, move):
-        """ Rotate the cube by the move
-        """
+        """ Rotate the cube by the move """
         if move == "U":
             self.rotate_top()
             return "U"
@@ -323,8 +316,7 @@ class Cube:
                 self.rotate_cube(move)
 
     def random_shuffle(self, number):
-        """ Randomly shuffle the cube
-        """
+        """ Randomly shuffle the cube """
         sequence = ""
         for _ in range(number):
             choice = random.choice(["U", "D", "L", "R", "F", "B"])
@@ -332,8 +324,7 @@ class Cube:
         return sequence
 
     def sort_cube(self, list_choices):
-        """ Sort the cube by the moves stored in list
-        """
+        """ Sort the cube by the moves stored in list """
         # Reverse list before the iteration
         for choice in reversed(list_choices):
             self.rotate_cube_reverse(choice)

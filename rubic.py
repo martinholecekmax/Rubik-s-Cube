@@ -73,8 +73,7 @@ def game_loop():
 
 
 def draw_cube(pygame, screen):
-    """ Draw the cube on the screen
-    """
+    """ Draw the cube on the screen """
     cube = Cube.get_cube()
     cube_color = Cube.get_cube_colors()
     num_faces = Cube.get_num_faces()
@@ -110,8 +109,7 @@ def draw_piece(pygame, screen, color, location):
 
 
 def draw_text(screen, font, text, location_x, location_y, justify):
-    """ Render text on the screen
-    """
+    """ Render text on the screen """
     line = font.render(text, True, BLUE)
     if justify == "LEFT":
         screen.blit(line, (location_x, location_y))
@@ -125,8 +123,7 @@ def draw_text(screen, font, text, location_x, location_y, justify):
 
 
 def draw_multiple_lines(screen, font, text_list, location_x, location_y, justify, line_spacing):
-    """ Render text with multiple lines on the screen
-    """
+    """ Render text with multiple lines on the screen """
     space_between_lines = 0
     for sentence in text_list:
         draw_text(screen, font, sentence, location_x,
