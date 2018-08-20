@@ -1,24 +1,29 @@
 import random
 import numpy as np
+import rendering
+import play as game
 
 class Cube:
-    piece_size = 50
-    num_faces = 6
-    num_pieces_per_face = 9    # size of cube => 9 for 3x3 cube, 16 for 4x4 cube ...
-    num_pieces_per_row = int(np.sqrt(num_pieces_per_face))
-    num_pieces_per_col = num_pieces_per_row
-    row_size = 2    # 0 - x position, 1 - y position
-    cube_position = np.full((num_faces, num_pieces_per_row, num_pieces_per_col, row_size), 0)
-    cube_colors = np.full((num_faces, num_pieces_per_row, num_pieces_per_col), 0)
+    def __init__(self):
+        self.num_faces = 6
+        self.num_pieces_per_face = 9    # size of cube => 9 for 3x3 cube, 16 for 4x4 cube ...
+        self.num_pieces_per_row = int(np.sqrt(self.num_pieces_per_face))
+        self.num_pieces_per_col = self.num_pieces_per_row
+        self.cube_colors = np.full((self.num_faces, self.num_pieces_per_row, self.num_pieces_per_col), 0)
+        self.init_colors()
+        self.probility = 0
+        self.view = None
+        self.position_array_row_size = 2
+        self.piece_size = 50
 
-    def get_cube_colors(self):
-        return self.cube_colors
-
-    def get_cube(self):
-        return self.cube_position
+    def get_position_array_row_size(self):
+        return self.position_array_row_size
 
     def get_piece_size(self):
         return self.piece_size
+
+    def get_cube_colors(self):
+        return self.cube_colors
 
     def get_num_faces(self):
         return self.num_faces
@@ -32,48 +37,12 @@ class Cube:
     def get_num_pieces_per_col(self):
         return self.num_pieces_per_col
 
-    def get_row_size(self):
-        return self.row_size
-
     def init_colors(self):
         """ Initialize colors of each piece of the cube """
         for side in range(self.num_faces):
             for row in range(self.num_pieces_per_row):
                 for col in range(self.num_pieces_per_col):
                     self.cube_colors[side][row][col] = side
-
-    def init_cube(self):
-        """ Initialize positions of each piece of the cube """
-        num_faces = self.num_faces
-        num_pieces_per_face = self.num_pieces_per_face
-        cube_array_row_size = self.row_size
-        num_pieces_per_row = self.num_pieces_per_row
-        num_pieces_per_col = self.num_pieces_per_col
-        piece_size = self.piece_size
-        cube = self.cube_position
-
-        column_position = piece_size
-        row_position = piece_size
-        face_column_position = num_pieces_per_col * piece_size     # First face has one face offset
-        face_row_position = 0
-
-        for side in range(num_faces):
-            for row in range(num_pieces_per_row):
-                for col in range(num_pieces_per_col):
-                    cube[side][row][col][0] = column_position + face_column_position
-                    cube[side][row][col][1] = row_position + face_row_position
-                    column_position += piece_size
-                row_position += piece_size
-                column_position = piece_size
-            row_position = piece_size
-            column_position = piece_size
-            face_column_position += num_pieces_per_col * piece_size
-            if side == 0:
-                face_row_position += num_pieces_per_row * piece_size    # face offset in horizontal direction
-                face_column_position = 0
-            if side == 4:
-                face_column_position = num_pieces_per_col * piece_size  # face offset in horizontal direction
-                face_row_position += num_pieces_per_row * piece_size    # face offset in vertical direction
 
     def rotate_top(self):
         """ Rotate Top face of a cube clockwise (U move to the right) """
@@ -310,6 +279,17 @@ class Cube:
         else:
             return "?"
 
+    def step(self, action):
+        """ Perform an Action on the environment """
+        self.rotate_cube(action)
+        if self.is_solved():
+            reward = 1.0
+            done = True
+        else:
+            reward = self.calculate_reward() / 100
+            done = False
+        return self.cube_colors, reward, done
+
     def rotate_cube_reverse(self, move):
         """ Rotate the cube in reverse move, for example, U move becomes U' -> 3x U move """
         for _ in range(3):
@@ -343,3 +323,33 @@ class Cube:
         list_of_moves = ["U", "R", "R", "F", "B", "R", "B", "B", "R", "U", "U", "L", "B", "B", "R", "U", "U", "U", "D", "D", "D", "R", "R", "F", "R", "R", "R", "L", "B", "B", "U", "U", "F", "F"]
         for move in list_of_moves:
             self.rotate_cube(move)
+
+    def reset(self):
+        """ Scrumble the cube """
+        self.super_flip_configuration()
+
+    def render(self):
+        if self.view == None:
+            self.view = rendering.View()
+            self.view.render(self.cube_colors)
+        else:
+            self.view.render(self.cube_colors)
+
+    def calculate_reward(self):
+        number = 0
+        for face in range(self.num_faces):
+            for row in range(self.num_pieces_per_row):
+                for col in range(self.num_pieces_per_col):
+                    if self.cube_colors[face][row][col] == face:
+                        number += 1
+        return number / 54 * 100
+
+    def close(self):
+        self.view.close()
+
+    def play(self):
+        game.play(self)
+
+def make():
+    """ Get an instance of the Cube environment """
+    return Cube()
