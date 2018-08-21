@@ -35,9 +35,9 @@ class View:
                     position_x = pos_col + face_column
                     position_y = pos_row + face_row
                     cv2.rectangle(img, (position_x, position_y),
-                                  (position_x + piece_size, position_y + piece_size), Color.get_color(color[face][row][col]), -1)
+                                  (position_x + piece_size, position_y + piece_size), Color.get_color_BGR(color[face][row][col]), -1)
                     cv2.rectangle(img, (position_x, position_y),
-                                  (position_x + piece_size, position_y + piece_size), Color.BLACK, color_filled)
+                                  (position_x + piece_size, position_y + piece_size), Color.BLACK_BGR, color_filled)
                     pos_col = pos_col + piece_size
                 pos_col = position_cube_x
                 pos_row = pos_row + piece_size

@@ -5,11 +5,11 @@ import numpy as np
 LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left side clockwise",
           "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise", "Hold SHIFT key to move anti-clockwise"]
 
-def play(env):
-    cube_position = np.full((env.get_num_faces(), env.get_num_pieces_per_row(), env.get_num_pieces_per_col(), env.get_position_array_row_size()), 0)
+
+def play(env, callback=None):
     pygame.init()
     env.reset()
-    init_cube_position(env, cube_position)
+    cube_position = init_cube_position(env)
 
     # Switch to fullscreen mode
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -29,29 +29,36 @@ def play(env):
     # Set Font
     font = pygame.font.SysFont("comicsansms", 24)
 
-    times_solved = 0
+    number_solved = 0
+    env_done = True
 
     while not pattern:
+        if env_done:
+            env_done = False
+            obs = env.reset()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pattern = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pattern = True
-                if event.key == pygame.K_1:
-                    env.init_colors()
-                key = key_pressed(env, event, pygame)
-                if key != "X":
-                    if env.is_solved():
-                        times_solved = times_solved + 1
-                        env.reset()
+                else:
+                    action = key_pressed(env, event, pygame)
+                    if action is not None:
+                        prev_obs = np.copy(obs)
+                        obs, reward, env_done = env.step(action)
+                        number_solved = number_solved + \
+                            1 if env_done else number_solved    # If cube is solved add one
+                        if callback is not None:
+                            callback(prev_obs, obs, action, reward, env_done)
 
         screen.blit(background, (0, 0))     # clear screen
 
         draw_cube(env, pygame, screen, cube_position)
         draw_multiple_lines(screen, font, LEGEND,
                             screen_width - 100, 150, "RIGHT", 50)
-        draw_text(screen, font, "Time solved: " + str(times_solved),
+        draw_text(screen, font, "Time solved: " + str(number_solved),
                   screen_width - 100, 50, "RIGHT")
 
         pygame.display.flip()
@@ -91,7 +98,7 @@ def draw_piece(pygame, screen, color, location):
         pygame.draw.rect(screen, Color.ORANGE_RGB, location)
     else:
         pygame.draw.rect(screen, Color.YELLOW_RGB, location)
-    pygame.draw.rect(screen, Color.BLACK, location, 2)
+    pygame.draw.rect(screen, Color.BLACK_RGB, location, 2)
 
 
 def draw_text(screen, font, text, location_x, location_y, justify):
@@ -118,53 +125,42 @@ def draw_multiple_lines(screen, font, text_list, location_x, location_y, justify
 
 
 def key_pressed(env, event, pygame):
+    """ Check if the key pressed is valid """
     if event.key == pygame.K_u and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("U")
-        return "U'"
+        return "Ui"
     if event.key == pygame.K_u:
-        env.rotate_cube("U")
         return "U"
     if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("D")
-        return "D'"
+        return "Di"
     if event.key == pygame.K_d:
-        env.rotate_cube("D")
         return "D"
     if event.key == pygame.K_l and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("L")
-        return "L'"
+        return "Li"
     if event.key == pygame.K_l:
-        env.rotate_cube("L")
         return "L"
     if event.key == pygame.K_r and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("R")
-        return "R'"
+        return "Ri"
     if event.key == pygame.K_r:
-        env.rotate_cube("R")
         return "R"
     if event.key == pygame.K_f and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("F")
-        return "F'"
+        return "Fi"
     if event.key == pygame.K_f:
-        env.rotate_cube("F")
         return "F"
     if event.key == pygame.K_b and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        env.rotate_cube_reverse("B")
-        return "B'"
+        return "Bi"
     if event.key == pygame.K_b:
-        env.rotate_cube("B")
         return "B"
-    if event.key == pygame.K_0:
-        return env.random_shuffle(number=10)
-    return "X"  # Not valid move
+    return None
 
 
-def init_cube_position(env, cube_position):
+def init_cube_position(env):
     """ Initialize positions of each piece of the cube """
     num_faces = env.get_num_faces()
     num_pieces_per_face = env.get_num_pieces_per_face()
     num_pieces_per_row = env.get_num_pieces_per_row()
     num_pieces_per_col = env.get_num_pieces_per_col()
+    cube_position = np.full((num_faces, num_pieces_per_row,
+                             num_pieces_per_col, env.get_position_array_row_size()), 0)
     piece_size = env.get_piece_size()
     column_position = piece_size
     row_position = piece_size
@@ -177,7 +173,8 @@ def init_cube_position(env, cube_position):
             for col in range(num_pieces_per_col):
                 cube_position[side][row][col][0] = column_position + \
                     face_column_position
-                cube_position[side][row][col][1] = row_position + face_row_position
+                cube_position[side][row][col][1] = row_position + \
+                    face_row_position
                 column_position += piece_size
             row_position += piece_size
             column_position = piece_size
@@ -193,3 +190,4 @@ def init_cube_position(env, cube_position):
                 piece_size  # face offset in horizontal direction
             face_row_position += num_pieces_per_row * \
                 piece_size    # face offset in vertical direction
+    return cube_position

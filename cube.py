@@ -261,27 +261,45 @@ class Cube:
         if move == "U":
             self.rotate_top()
             return "U"
+        elif move == "Ui":
+            self.rotate_cube_reverse("U")
+            return "Ui"
         elif move == "D":
             self.rotate_bottom()
             return "D"
+        elif move == "Di":
+            self.rotate_cube_reverse("D")
+            return "Di"
         elif move == "L":
             self.rotate_left()
             return "L"
+        elif move == "Li":
+            self.rotate_cube_reverse("L")
+            return "Li"
         elif move == "R":
             self.rotate_right()
             return "R"
+        elif move == "Ri":
+            self.rotate_cube_reverse("R")
+            return "Ri"
         elif move == "F":
             self.rotate_front()
             return "F"
+        elif move == "Fi":
+            self.rotate_cube_reverse("F")
+            return "Fi"
         elif move == "B":
             self.rotate_back()
             return "B"
+        elif move == "Bi":
+            self.rotate_cube_reverse("B")
+            return "Bi"
         else:
-            return "?"
+            return None
 
     def step(self, action):
         """ Perform an Action on the environment """
-        self.rotate_cube(action)
+        assert self.rotate_cube(action) is not None, "%r is invalid action" % action
         if self.is_solved():
             reward = 1.0
             done = True
@@ -299,7 +317,7 @@ class Cube:
         """ Randomly shuffle the cube """
         sequence = ""
         for _ in range(number):
-            choice = random.choice(["U", "D", "L", "R", "F", "B"])
+            choice = random.choice(["U", "D", "L", "R", "F", "B", "Ui", "Di", "Li", "Ri", "Fi", "Bi"])
             sequence += self.rotate_cube(choice)
         return sequence
 
@@ -320,13 +338,15 @@ class Cube:
 
     def super_flip_configuration(self):
         """ This is a rubics cube configuration where the cube is most scrumbled """
-        list_of_moves = ["U", "R", "R", "F", "B", "R", "B", "B", "R", "U", "U", "L", "B", "B", "R", "U", "U", "U", "D", "D", "D", "R", "R", "F", "R", "R", "R", "L", "B", "B", "U", "U", "F", "F"]
+        list_of_moves = ["U", "R", "R", "F", "B", "R", "B", "B", "R", "U", "U", "L", "B", "B", "R", "Ui", "Di", "R", "R", "F", "Ri", "L", "B", "B", "U", "U", "F", "F"]
         for move in list_of_moves:
             self.rotate_cube(move)
 
     def reset(self):
-        """ Scrumble the cube """
+        """ Reset environment and return initial observation """
+        self.init_colors()
         self.super_flip_configuration()
+        return self.cube_colors
 
     def render(self):
         if self.view == None:
@@ -347,8 +367,8 @@ class Cube:
     def close(self):
         self.view.close()
 
-    def play(self):
-        game.play(self)
+    def play(self, callback=None):
+        game.play(self, callback)
 
 def make():
     """ Get an instance of the Cube environment """
