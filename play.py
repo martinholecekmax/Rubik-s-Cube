@@ -1,12 +1,41 @@
 import pygame
 import color as Color
 import numpy as np
+import space
 
 LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left side clockwise",
           "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise", "Hold SHIFT key to move anti-clockwise"]
 
 
-def play(env, callback=None):
+def play(env, fps=60, callback=None):
+    """ Allows to play the game using keyboard
+
+        To play the game use:
+
+            import rubiks_cube as cube
+            env = cube.make()
+            env.play()
+
+        Arguments:
+        env: instance of rubicks_cube.py
+            Rubiks Cube Environment
+        fps: int
+            Frames Per Second, Maximum number of steps of the environment
+            executed every second. Default is 30
+        callback: lambda or None
+            Callback is a function which will be executed after every step.
+            Input:
+                prev_obs: numpy array of the cube's colors
+                    previous observation, observation before performing action
+                obs: numpy array of the cube's colors
+                    observation after performing action
+                action: Enum of Moves inside space.py (integers 0 to 11)
+                    action that was executed
+                reward: float norm (numbers between 0 and 1)
+                    reward that was received
+                env_done: bool (True - environment finished)
+                    whether the environment is done or not
+    """
     pygame.init()
     env.reset()
     cube_position = init_cube_position(env)
@@ -62,7 +91,7 @@ def play(env, callback=None):
                   screen_width - 100, 50, "RIGHT")
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(fps)
     pygame.quit()
 
 
@@ -111,7 +140,7 @@ def draw_text(screen, font, text, location_x, location_y, justify):
     elif justify == "CENTER":
         screen.blit(line, (location_x - (line.get_width() / 2.0), location_y))
     else:
-        print("Default LEFT")
+        # Default justify to the LEFT
         screen.blit(line, (location_x, location_y))
 
 
@@ -127,29 +156,29 @@ def draw_multiple_lines(screen, font, text_list, location_x, location_y, justify
 def key_pressed(env, event, pygame):
     """ Check if the key pressed is valid """
     if event.key == pygame.K_u and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Ui"
+        return space.Moves.Ui
     if event.key == pygame.K_u:
-        return "U"
+        return space.Moves.U
     if event.key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Di"
+        return space.Moves.Di
     if event.key == pygame.K_d:
-        return "D"
+        return space.Moves.D
     if event.key == pygame.K_l and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Li"
+        return space.Moves.Li
     if event.key == pygame.K_l:
-        return "L"
+        return space.Moves.L
     if event.key == pygame.K_r and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Ri"
+        return space.Moves.Ri
     if event.key == pygame.K_r:
-        return "R"
+        return space.Moves.R
     if event.key == pygame.K_f and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Fi"
+        return space.Moves.Fi
     if event.key == pygame.K_f:
-        return "F"
+        return space.Moves.F
     if event.key == pygame.K_b and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-        return "Bi"
+        return space.Moves.Bi
     if event.key == pygame.K_b:
-        return "B"
+        return space.Moves.B
     return None
 
 
