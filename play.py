@@ -87,12 +87,8 @@ def play(env, fps=60, callback=None):
         draw_cube(env, pygame, screen, cube_position)
         draw_text(screen, font, "Time solved: " + str(number_solved),
                   screen_width - 100, 50, "RIGHT")
-        draw_text(screen, font, "Correct Corners: " + str(env.get_num_correct_corners()),
-                  screen_width - 100, 100, "RIGHT")
-        draw_text(screen, font, "Correct Edges: " + str(env.get_num_correct_edges()),
-                  screen_width - 100, 150, "RIGHT")
         draw_multiple_lines(screen, font, LEGEND,
-                            screen_width - 100, 200, "RIGHT", 50)
+                            screen_width - 100, 100, "RIGHT", 50)
 
         pygame.display.flip()
         clock.tick(fps)
