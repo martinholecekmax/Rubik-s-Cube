@@ -310,7 +310,8 @@ class Cube:
             reward = 1.0
             done = True
         else:
-            reward = self.calculate_reward() / 100
+            reward = self.calculate_reward_pieces_position() / 100
+            # reward = self.calculate_reward() / 100
             done = False
         return self.cube_colors, reward, done
 
@@ -410,6 +411,84 @@ class Cube:
                     if self.cube_colors[face][row][col] == face:
                         correct_pieces += 1
         return correct_pieces / 54 * 100
+
+    def calculate_reward_pieces_position(self):
+        """ Calculate reward base on pieces position
+        """
+        correct_pieces = 0
+        correct_pieces += self.get_num_correct_corners()
+        correct_pieces += self.get_num_correct_edges()
+        return correct_pieces / 20 * 100
+
+    def get_num_correct_corners(self):
+        """ Get number of corner pieces that are on correct position """
+        number_correct_corners = 0
+        # W0 G0 O6    0,0,0   1,0,0   4,0,2
+        if self.cube_colors[0][0][0] == 0 and self.cube_colors[1][0][0] == 1 and self.cube_colors[4][0][2] == 4:
+            number_correct_corners += 1
+        # W2 G6 R0    0,2,0   1,0,2   2,0,0
+        if self.cube_colors[0][2][0] == 0 and self.cube_colors[1][0][2] == 1 and self.cube_colors[2][0][0] == 2:
+            number_correct_corners += 1
+        # W6 6B O0    0,0,2   3,0,2   4,0,0
+        if self.cube_colors[0][0][2] == 0 and self.cube_colors[3][0][2] == 3 and self.cube_colors[4][0][0] == 4:
+            number_correct_corners += 1
+        # W8 R6 B0    0,2,2   2,0,2   3,0,0
+        if self.cube_colors[0][2][2] == 0 and self.cube_colors[2][0][2] == 2 and self.cube_colors[3][0][0] == 3:
+            number_correct_corners += 1
+        # Y0 G8 R2    5,0,0   1,2,2   2,2,0
+        if self.cube_colors[5][0][0] == 5 and self.cube_colors[1][2][2] == 1 and self.cube_colors[2][2][0] == 2:
+            number_correct_corners += 1
+        # Y2 G2 O8    5,2,0   1,2,0   4,2,2
+        if self.cube_colors[5][2][0] == 5 and self.cube_colors[1][2][0] == 1 and self.cube_colors[4][2][2] == 4:
+            number_correct_corners += 1
+           # Y6 R8 B2    5,0,2   2,2,2   3,2,0
+        if self.cube_colors[5][0][2] == 5 and self.cube_colors[2][2][2] == 2 and self.cube_colors[3][2][0] == 3:
+            number_correct_corners += 1
+        # Y8 B8 O2    5,2,2   3,2,2   4,2,0
+        if self.cube_colors[5][2][2] == 5 and self.cube_colors[3][2][2] == 3 and self.cube_colors[4][2][0] == 4:
+            number_correct_corners += 1
+        return number_correct_corners
+
+    def get_num_correct_edges(self):
+        """ Get number of edge pieces that are on correct position """
+        number_correct_edges = 0
+        # 0,0,1   4,0,1
+        if self.cube_colors[0][0][1] == 0 and self.cube_colors[4][0][1] == 4:
+            number_correct_edges += 1
+        # 0,1,0   1,0,1
+        if self.cube_colors[0][1][0] == 0 and self.cube_colors[1][0][1] == 1:
+            number_correct_edges += 1
+        # 0,1,2   3,0,1
+        if self.cube_colors[0][1][2] == 0 and self.cube_colors[3][0][1] == 3:
+            number_correct_edges += 1
+        # 0,2,1   2,0,1
+        if self.cube_colors[0][2][1] == 0 and self.cube_colors[2][0][1] == 2:
+            number_correct_edges += 1
+        # 5,0,1   2,2,1
+        if self.cube_colors[5][0][1] == 5 and self.cube_colors[2][2][1] == 2:
+            number_correct_edges += 1
+        # 5,1,0   1,2,1
+        if self.cube_colors[5][1][0] == 5 and self.cube_colors[1][2][1] == 1:
+            number_correct_edges += 1
+        # 5,1,2   3,2,1
+        if self.cube_colors[5][1][2] == 5 and self.cube_colors[3][2][1] == 3:
+            number_correct_edges += 1
+        # 5,2,1   4,2,1
+        if self.cube_colors[5][2][1] == 5 and self.cube_colors[4][2][1] == 4:
+            number_correct_edges += 1
+        # 1,1,0   4,1,2
+        if self.cube_colors[1][1][0] == 1 and self.cube_colors[4][1][2] == 4:
+            number_correct_edges += 1
+        # 1,1,2   2,1,0
+        if self.cube_colors[1][1][2] == 1 and self.cube_colors[2][1][0] == 2:
+            number_correct_edges += 1
+        # 3,1,0   2,1,2
+        if self.cube_colors[3][1][0] == 3 and self.cube_colors[2][1][2] == 2:
+            number_correct_edges += 1
+        # 3,1,2   4,1,0
+        if self.cube_colors[3][1][2] == 3 and self.cube_colors[4][1][0] == 4:
+            number_correct_edges += 1
+        return number_correct_edges
 
     def close(self):
         """ Close the rendering window """
