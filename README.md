@@ -2,7 +2,7 @@
 Rubic's cube 2D environment can be used for testing not only **Reinforcement Learning algorithms** but, also for testing **Convolutional Neural Networks** or other **Deep Neural Networks**. This environment is compatible with libraries such as **TensorFlow** and other machine learning libraries.
 
 ## Basics
-The Rubik's Cube environment reacts to an **action** sent by an **agent** (namely, custom machine learning algorithm). After receiving an action, the environment will return back ``observation`` and ``reward`` discussed later. The environment interface can be found inside the ``rubiks_cube.py`` class which contains various methods to control the environment.
+The Rubik's Cube environment reacts to an **action** sent by an **agent** (namely, custom machine learning algorithm). After receiving an action, the environment will return back ``observation``, ``reward`` and ``done`` discussed later. The environment interface can be found inside the ``rubiks_cube.py`` class which contains various methods to control the environment.
 
 ## Environment Initialization
 There are three steps which have to be done to initialize an environment as shows code below. The ``make`` function will return an instance of a Cube class which is an interface to the environment. The environment **must** be **reset** before performing an action on the environment, otherwise, the environment will not perform an action and it will return an error. The ``reset`` function will ensure that the environment is initialized and the cube is scrambled. This function will also store the time variable that can be used to calculate how long it took to solve the cube. 
