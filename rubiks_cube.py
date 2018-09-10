@@ -14,8 +14,7 @@ from reward import Reward
 class Cube:
     def __init__(self):
         self.num_faces = 6
-        # size of cube => 9 for 3x3 cube
-        self.num_pieces_per_face = 9
+        self.num_pieces_per_face = 9  # size of cube => 9 for 3x3 cube
         self.num_pieces_per_row = int(np.sqrt(self.num_pieces_per_face))
         self.num_pieces_per_col = self.num_pieces_per_row
         self.cube_colors = np.full(
@@ -78,9 +77,7 @@ class Cube:
             reward = 1.0
             done = True
         else:
-            reward = self.action_reward.calculate_reward_pieces_position(
-                self.cube_colors) / 100
-            # reward = self.action_reward.calculate_reward(self.cube_colors) / 100
+            reward = self.action_reward.calculate_reward()
             done = False
         return self.cube_colors, reward, done
 

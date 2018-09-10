@@ -24,16 +24,17 @@ env.play(callback=callback)
 """ Each step at the time """
 env = cube.make()
 num_done = 0
-for i_episode in range(20000000):
+for i_episode in range(200):
     observation = env.reset()
-    for t in range(10):
+    for t in range(20):
         action = env.action_space.sample()
         prev_obs = observation
         observation, reward, done = env.step(action)
         isopen = env.render()
-        # callback(prev_obs, observation, action, reward, done)
+        callback(prev_obs, observation, action, reward, done)
         if done:
             print("Episode finished after {} timesteps".format(t+1))
+            print("Reward: ", reward)
             print("Time: ", env._elapsed_seconds)
             num_done += 1
             break

@@ -4,20 +4,18 @@ class Reward:
         self.num_faces = env.get_num_faces()
         self.num_pieces_per_row = env.get_num_pieces_per_row()
         self.num_pieces_per_col = env.get_num_pieces_per_col()
+        self.last_reward = 0
+        self.cube_colors = env.cube_colors
 
-    def calculate_reward_pieces_color(self, cube):
-        """ Calculate reward for each move
-            The reword is calculated by iterating over
-            the cube colors array and if the color is
-            the face color, then add one to the counter
-            of correct pieces. After iteration is finished,
-            correct pieces number is divided by the number of
-            the total pieces of the cube and multiply by 100
-            which gives the reward represented as percentage.
+    def calculate_reward(self):
+        """ This function allows to choose which way to calculate reward. """
+        # return self.calculate_reward_pieces_color()
+        return self.calculate_reward_pieces_position()
 
+    def calculate_reward_pieces_color(self):
+        """ Calculate reward for each move based on number of pieces color that are correct for each wall.
             return: float
-                Percentage of the cube solved
-
+                Normalized value between -1 and 1 of the correct pieces of the cube
         """
         correct_pieces = 0
         for face in range(self.num_faces):
@@ -25,15 +23,35 @@ class Reward:
                 for col in range(self.num_pieces_per_col):
                     if self.cube_colors[face][row][col] == face:
                         correct_pieces += 1
-        return correct_pieces / 54 * 100
+        # reward = self.normalization(correct_pieces, 54, 0, 0, 1)    # Normalization (reward is number between 0.0 and 1.0)
+        reward = self.normalization(correct_pieces, 54, 0, -1, 1)  # Normalization (reward is number between -1.0 and 1.0)
+        self.last_reward = reward
+        return reward
 
-    def calculate_reward_pieces_position(self, cube):
-        """ Calculate reward base on pieces position
+    def calculate_reward_pieces_position(self):
+        """ Calculate reward by checking if each piece is in correct position.
+            return: float
+                Normalized value between -1 and 1 of the correct pieces of the cube
         """
         correct_pieces = 0
-        correct_pieces += self.get_num_correct_corners(cube)
-        correct_pieces += self.get_num_correct_edges(cube)
-        return correct_pieces / 20 * 100
+        num_edges = 12
+        num_corners = 8
+        correct_pieces += self.get_num_correct_corners(self.cube_colors)
+        correct_pieces += self.get_num_correct_edges(self.cube_colors)
+        # reward = self.normalization(correct_pieces, num_corners + num_edges, 0, 0, 1)   # Normalization (reward is number between 0.0 and 1.0)
+        reward = self.normalization(correct_pieces, num_corners + num_edges, 0, -1, 1)  # Normalization (reward is number between -1.0 and 1.0)
+        self.last_reward = reward
+        return reward
+
+    def normalization(self, x, x_max, x_min, a, b):
+        """ Normalization formula
+            x - value to be normalized
+            x_max - max value of x
+            x_min - min value of x
+            a, b - range of normalization (a - min, b - max)
+        """
+        norm = (b - a) * ( ( x - x_min ) / ( x_max - x_min) ) + a
+        return norm
 
     def get_num_correct_corners(self, cube_colors):
         """ Get number of corner pieces that are on correct position """
