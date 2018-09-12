@@ -1,6 +1,6 @@
 from enum import Enum
 import random
-
+import numpy as np
 
 class Moves(Enum):
     U = 0
@@ -17,6 +17,25 @@ class Moves(Enum):
     Bi = 11
 
 class Action:
+    def __init__(self, env):
+        self.env = env
+
+    def init_colors(self, cube_colors):
+        """ Initialize colors of each piece of the cube """
+        for side in range(self.env.num_faces):
+            for row in range(self.env.num_pieces_per_row):
+                for col in range(self.env.num_pieces_per_col):
+                    cube_colors[side][row][col] = side
+
+    def is_solved(self, cube_colors):
+        """ Check if the cube is solved """
+        for face in range(self.env.num_faces):
+            for row in range(self.env.num_pieces_per_row):
+                for col in range(self.env.num_pieces_per_col):
+                    if cube_colors[face][row][col] != face:
+                        return False
+        return True
+
     def rotate_top(self, cube):
         """ Rotate Top face of a cube clockwise (U move to the right) """
 

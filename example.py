@@ -17,8 +17,8 @@ def callback(prev_obs, obs, action, reward, done):
 
 
 """ Environment will be scrumble by the move inside test_list """
-test_list = ["ui", "dI", "L", "D", "L", "D", "L", "D", "L", "Di", "Li"]
-# test_list = [0, 6]
+# test_list = ["ui", "dI", "L", "D", "L", "D", "L", "D", "L", "Di", "Li"]
+test_list = [0, 6, 11, 8]
 
 """ Play the game manualy """
 env = cube.make()

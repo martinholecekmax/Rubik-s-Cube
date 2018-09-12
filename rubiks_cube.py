@@ -17,12 +17,12 @@ class Cube:
         self.num_pieces_per_face = 9  # size of cube => 9 for 3x3 cube
         self.num_pieces_per_row = int(np.sqrt(self.num_pieces_per_face))
         self.num_pieces_per_col = self.num_pieces_per_row
-        self.cube_colors = np.full(
-            (self.num_faces, self.num_pieces_per_row, self.num_pieces_per_col), 0)
         self.position_array_row_size = 2
         self.piece_size = 50
+        self.cube_colors = np.full(
+            (self.num_faces, self.num_pieces_per_row, self.num_pieces_per_col), 0)
         self.action_space = Discrete(11)  # 11 is the number of possible moves
-        self.action_move = Action()       # Actions that cube can perform
+        self.action_move = Action(self)       # Actions that cube can perform
         self.action_reward = Reward(self)
         self.view = None
         self.steps_beyond_done = False
@@ -36,22 +36,6 @@ class Cube:
         """
         return time.time() - self.episode_started_at
 
-    def init_colors(self):
-        """ Initialize colors of each piece of the cube """
-        for side in range(self.num_faces):
-            for row in range(self.num_pieces_per_row):
-                for col in range(self.num_pieces_per_col):
-                    self.cube_colors[side][row][col] = side
-
-    def is_solved(self):
-        """ Check if the cube is solved """
-        for face in range(self.num_faces):
-            for row in range(self.num_pieces_per_row):
-                for col in range(self.num_pieces_per_col):
-                    if self.cube_colors[face][row][col] != face:
-                        return False
-        return True
-
     def step(self, action):
         """ Perform an Action on the environment
             :param action: int
@@ -61,7 +45,7 @@ class Cube:
         assert self.action_space.contains(
             action) is not None, "%r is invalid action" % action
         self.action_move.rotate_cube(self.cube_colors, Moves(action))
-        if self.is_solved():
+        if self.action_move.is_solved(self.cube_colors):
             reward = 1.0
             done = True
         else:
@@ -82,7 +66,7 @@ class Cube:
             return: numpy array
                 initial observation
         """
-        self.init_colors()
+        self.action_move.init_colors(self.cube_colors)
         if list_moves == None:
             self.action_move.super_flip_configuration(self.cube_colors)
         else:
