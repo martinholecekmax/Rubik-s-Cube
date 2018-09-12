@@ -278,19 +278,33 @@ class Action:
             sequence += choice
         return sequence
 
-    def sort_cube(self, cube, list_choices):
-        """ Sort the cube by the moves stored in list
-            :param list_choices: Array List of Strings
-                Each string is a move to rotate cube
-            The List is Reversed before the iteration and
-            each move is done 3 times which rotates cube in
-            oposite direction of the given move
+    def scramble_cube_from_list(self, cube, list_moves):
+        """ Scramble the cube by the moves from the array list
+            :param list_moves: Array List of Strings or Integers
+                Each element is a move that will rotate the cube
+                The elements of the list can be either numeric
+                representation of the move (values between 0 and 11),
+                or string values (U, Ui, D, Di, L, Li, R, Ri, F, Fi, B, Bi)
+                which are case insensitive and can be either uppercase, lower case or mixed.
         """
-        for choice in reversed(list_choices):
-            self.rotate_cube_reverse(cube, Moves[choice])
+        is_number = all(isinstance(i, int) for i in list_moves)
+        if is_number:
+            is_number = all(i >= 0 and i <= 11 for i in list_moves)
+            if not is_number:
+                assert False, "Out of bounds, only numbers between 0 and 11 are allowed!"
+            else:
+                for move in list_moves:
+                    self.rotate_cube(cube, Moves(move))
+        else:
+            is_string = set([move.capitalize() for move in list_moves]).issubset([move.name for move in Moves])
+            if is_string:
+                for move in list_moves:
+                    self.rotate_cube(cube, Moves[move.capitalize()])
+            else:
+                assert False, "Invalid moves, available moves: U, Ui, D, Di, L, Li, R, Ri, F, Fi, B, Bi"
 
     def super_flip_configuration(self, cube):
-        """ This is a rubics cube configuration where the cube is most scrumbled """
+        """ This is the configuration where the cube is the most scrumbled """
         list_of_moves = ["U", "R", "R", "F", "B", "R", "B", "B", "R", "U", "U", "L", "B", "B", "R", "Ui", "Di", "R", "R", "F", "Ri", "L", "B", "B", "U", "U", "F", "F"]
         # list_of_moves = [0 ,6, 6, 8, 10, 6, 10, 10, 6, 0, 0, 4, 10, 10, 6, 1, 3, 6, 6, 8, 7, 4, 10, 10, 0, 0, 8, 8]
         for move in list_of_moves:

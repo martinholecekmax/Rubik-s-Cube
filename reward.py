@@ -1,10 +1,8 @@
 
 class Reward:
     def __init__(self, env):
-        self.num_faces = env.get_num_faces()
-        self.num_pieces_per_row = env.get_num_pieces_per_row()
-        self.num_pieces_per_col = env.get_num_pieces_per_col()
         self.last_reward = 0
+        self.env = env
         self.cube_colors = env.cube_colors
 
     def calculate_reward(self):
@@ -18,9 +16,9 @@ class Reward:
                 Normalized value between -1 and 1 of the correct pieces of the cube
         """
         correct_pieces = 0
-        for face in range(self.num_faces):
-            for row in range(self.num_pieces_per_row):
-                for col in range(self.num_pieces_per_col):
+        for face in range(self.env.num_faces):
+            for row in range(self.env.num_pieces_per_row):
+                for col in range(self.env.num_pieces_per_col):
                     if self.cube_colors[face][row][col] == face:
                         correct_pieces += 1
         # reward = self.normalization(correct_pieces, 54, 0, 0, 1)    # Normalization (reward is number between 0.0 and 1.0)

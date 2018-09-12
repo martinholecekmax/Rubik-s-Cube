@@ -36,33 +36,21 @@ class Cube:
         """
         return time.time() - self.episode_started_at
 
-    def get_position_array_row_size(self):
-        return self.position_array_row_size
-
-    def get_piece_size(self):
-        return self.piece_size
-
-    def get_cube_colors(self):
-        return self.cube_colors
-
-    def get_num_faces(self):
-        return self.num_faces
-
-    def get_num_pieces_per_face(self):
-        return self.num_pieces_per_face
-
-    def get_num_pieces_per_row(self):
-        return self.num_pieces_per_row
-
-    def get_num_pieces_per_col(self):
-        return self.num_pieces_per_col
-
     def init_colors(self):
         """ Initialize colors of each piece of the cube """
         for side in range(self.num_faces):
             for row in range(self.num_pieces_per_row):
                 for col in range(self.num_pieces_per_col):
                     self.cube_colors[side][row][col] = side
+
+    def is_solved(self):
+        """ Check if the cube is solved """
+        for face in range(self.num_faces):
+            for row in range(self.num_pieces_per_row):
+                for col in range(self.num_pieces_per_col):
+                    if self.cube_colors[face][row][col] != face:
+                        return False
+        return True
 
     def step(self, action):
         """ Perform an Action on the environment
@@ -81,22 +69,25 @@ class Cube:
             done = False
         return self.cube_colors, reward, done
 
-    def is_solved(self):
-        """ Check if the cube is solved """
-        for face in range(self.num_faces):
-            for row in range(self.num_pieces_per_row):
-                for col in range(self.num_pieces_per_col):
-                    if self.cube_colors[face][row][col] != face:
-                        return False
-        return True
-
-    def reset(self):
+    def reset(self, list_moves=None):
         """ Reset environment
+            :param list_moves: Array List of Strings, Integers, or None
+                Each element is a move that will rotate the cube.
+                The elements of the list can be either numeric
+                representation of the move (values between 0 and 11),
+                or string values (U, Ui, D, Di, L, Li, R, Ri, F, Fi, B, Bi)
+                which are case insensitive and can be either uppercase, lower case or mixed.
+                If the list_moves is None, then the cube will be scrumbled into super flip
+                configuration.
             return: numpy array
                 initial observation
         """
         self.init_colors()
-        self.action_move.super_flip_configuration(self.cube_colors)
+        if list_moves == None:
+            self.action_move.super_flip_configuration(self.cube_colors)
+        else:
+            self.action_move.scramble_cube_from_list(
+                self.cube_colors, list_moves)
         self.steps_beyond_done = True
         self.episode_started_at = time.time()
         return self.cube_colors
@@ -116,9 +107,9 @@ class Cube:
         """ Close the rendering window """
         self.view.close()
 
-    def play(self, fps=30, callback=None):
+    def play(self, fps=30, callback=None, scramble=None):
         """ Play the game manually """
-        game.play(self, fps=fps, callback=callback)
+        game.play(self, fps=fps, callback=callback, scramble=scramble)
 
 
 def make():

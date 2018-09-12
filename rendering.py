@@ -3,7 +3,7 @@ import color as Color
 from pyglet.gl import *
 
 
-class CubePiece:
+class CubeDraw:
     def draw_piece(self, x, y, width, height, color):
         """
             draw_rec( x , y , width , height , color )
@@ -67,7 +67,7 @@ class View:
             width, height, self.winname, resizable=True)
         self.isopen = True
         self.window.on_close = self.window_closed_by_user
-        self.piece = CubePiece()
+        self.piece = CubeDraw()
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 

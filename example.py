@@ -16,16 +16,20 @@ def callback(prev_obs, obs, action, reward, done):
     print("==================================================================")
 
 
+""" Environment will be scrumble by the move inside test_list """
+test_list = ["ui", "dI", "L", "D", "L", "D", "L", "D", "L", "Di", "Li"]
+# test_list = [0, 6]
+
 """ Play the game manualy """
 env = cube.make()
 print(env.action_space)
-env.play(callback=callback)
+env.play(callback=callback, scramble=test_list)
 
 """ Each step at the time """
 env = cube.make()
 num_done = 0
 for i_episode in range(200):
-    observation = env.reset()
+    observation = env.reset(test_list)
     for t in range(20):
         action = env.action_space.sample()
         prev_obs = observation

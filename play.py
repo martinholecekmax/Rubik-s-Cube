@@ -7,7 +7,7 @@ LEGEND = ["U - Move top clockwise", "D - Move bottom clockwise", "L - Move left 
           "R - Move right side clockwise", "F - Move front side clockwise", "B - Move back side clockwise", "Hold SHIFT key to move anti-clockwise"]
 
 
-def play(env, fps=60, callback=None):
+def play(env, fps=60, callback=None, scramble=None):
     """ Allows to play the game using keyboard
 
         To play the game use:
@@ -35,9 +35,11 @@ def play(env, fps=60, callback=None):
                     reward that was received
                 env_done: bool (True - environment finished)
                     whether the environment is done or not
+        scramble: list of moves or None
+            This allows environment to be reset by custom moves.
     """
     pygame.init()
-    env.reset()
+    env.reset(scramble)
     cube_position = init_cube_position(env)
 
     # Switch to fullscreen mode
@@ -64,7 +66,7 @@ def play(env, fps=60, callback=None):
     while not pattern:
         if env_done:
             env_done = False
-            obs = env.reset()
+            obs = env.reset(scramble)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -97,18 +99,11 @@ def play(env, fps=60, callback=None):
 
 def draw_cube(env, pygame, screen, cube_position):
     """ Draw the cube on the screen """
-    cube_color = env.get_cube_colors()
-    num_faces = env.get_num_faces()
-    num_pieces_per_face = env.get_num_pieces_per_face()
-    num_pieces_per_row = env.get_num_pieces_per_row()
-    num_pieces_per_col = env.get_num_pieces_per_col()
-    piece_size = env.get_piece_size()
-
-    for side in range(num_faces):
-        for row in range(num_pieces_per_row):
-            for col in range(num_pieces_per_col):
-                draw_piece(pygame, screen, cube_color[side][row][col], [
-                    cube_position[side][row][col][0], cube_position[side][row][col][1], piece_size, piece_size])
+    for side in range(env.num_faces):
+        for row in range(env.num_pieces_per_row):
+            for col in range(env.num_pieces_per_col):
+                draw_piece(pygame, screen, env.cube_colors[side][row][col], [
+                    cube_position[side][row][col][0], cube_position[side][row][col][1], env.piece_size, env.piece_size])
 
 
 def draw_piece(pygame, screen, color, location):
@@ -184,22 +179,18 @@ def key_pressed(env, event, pygame):
 
 def init_cube_position(env):
     """ Initialize positions of each piece of the cube """
-    num_faces = env.get_num_faces()
-    num_pieces_per_face = env.get_num_pieces_per_face()
-    num_pieces_per_row = env.get_num_pieces_per_row()
-    num_pieces_per_col = env.get_num_pieces_per_col()
-    cube_position = np.full((num_faces, num_pieces_per_row,
-                             num_pieces_per_col, env.get_position_array_row_size()), 0)
-    piece_size = env.get_piece_size()
+    cube_position = np.full((env.num_faces, env.num_pieces_per_row,
+                             env.num_pieces_per_col, env.position_array_row_size), 0)
+    piece_size = env.piece_size
     column_position = piece_size
     row_position = piece_size
-    face_column_position = num_pieces_per_col * \
+    face_column_position = env.num_pieces_per_col * \
         piece_size     # First face has one face offset
     face_row_position = 0
 
-    for side in range(num_faces):
-        for row in range(num_pieces_per_row):
-            for col in range(num_pieces_per_col):
+    for side in range(env.num_faces):
+        for row in range(env.num_pieces_per_row):
+            for col in range(env.num_pieces_per_col):
                 cube_position[side][row][col][0] = column_position + \
                     face_column_position
                 cube_position[side][row][col][1] = row_position + \
@@ -209,14 +200,14 @@ def init_cube_position(env):
             column_position = piece_size
         row_position = piece_size
         column_position = piece_size
-        face_column_position += num_pieces_per_col * piece_size
+        face_column_position += env.num_pieces_per_col * piece_size
         if side == 0:
-            face_row_position += num_pieces_per_row * \
+            face_row_position += env.num_pieces_per_row * \
                 piece_size    # face offset in horizontal direction
             face_column_position = 0
         if side == 4:
-            face_column_position = num_pieces_per_col * \
+            face_column_position = env.num_pieces_per_col * \
                 piece_size  # face offset in horizontal direction
-            face_row_position += num_pieces_per_row * \
+            face_row_position += env.num_pieces_per_row * \
                 piece_size    # face offset in vertical direction
     return cube_position
