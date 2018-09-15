@@ -32,7 +32,7 @@ Number | Move
 10 | B clockwise
 11 | B anti-clockwise
 
-### Sending Actions
+## Step function
 The agent sends action to the environment by using ``step`` function, which will perform rotation of the cube. The ``step`` function returns `observation`, `reward` and `done`.
 ```python
 observation, reward, done = env.step(action)  # Action is a number between 0 and 11
@@ -51,12 +51,11 @@ Number | Color
 5 | Yellow
 
 ### Reward
-The reward class is located in the ``reward.py`` file which contains two ways of how to calculate reward which can be switched between by commenting and uncommenting the following lines.
+A reward variable is a float number which is normalized to be between **-1** and **1**. The reward class is located in the ``reward.py`` file which contains two ways of how reward can be calculated. The first way is by using the ``calculate_reward_pieces_color()`` method which returns reward based on the cube's wall colours by taking a percentage of the correct colours per each wall. The other way is to use the ``calculate_reward_pieces_position()`` method which checks if every piece is in a correct position. These two methods can be swapped by commenting and uncommenting the following lines.
 ```python
 return calculate_reward_pieces_color()
 # return calculate_reward_pieces_position()
 ```
-The method ``calculate_reward_pieces_color()`` returns reward based on the cube's wall colors by taking a percentage of the correct colors per the wall.
 
 ### Done
 The ``done`` variable is represented by the boolean data type where **True** indicates that the cube is solved and **False** indicates that the cube is **not** solved.  
